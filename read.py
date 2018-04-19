@@ -81,7 +81,7 @@ def main(calc_stability,data_dir,stable_voxels_number):
     
     fmri_data_final=np.zeros((60,stable_voxels_number))
     mean_data=np.tile(mean_data,(60,1))
-    fmri_data_final=(fmri_data_proc-mean_data)/np.std(fmri_data_final)
+    fmri_data_final=(fmri_data_proc-mean_data)
     noun_image_dict = dict()
     
     for n_id,n in enumerate(nouns):
