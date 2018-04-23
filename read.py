@@ -8,7 +8,7 @@ from scipy.stats.stats import pearsonr
 def stable_voxel_selection(calc_st,fmri_data,length,no_stable,trial_ids):
     combs = set(itertools.combinations([0,1,2,3,4,5],2))
     combs = list(combs)
-
+    stab_vox = None
     if (calc_st):
         vox=np.zeros((length,6,60))
         #print(fmri_data_for_trial[tempo[0,:],0])
@@ -79,7 +79,7 @@ def main(calc_stability,data_dir,stable_voxels_number):
     mean_data=np.sum(fmri_data_proc,axis=0)
     mean_data/=60
     
-    fmri_data_final=np.zeros((60,stable_voxels_number))
+    #fmri_data_final=np.zeros((60,stable_voxels_number))
     mean_data=np.tile(mean_data,(60,1))
     fmri_data_final=(fmri_data_proc-mean_data)
     noun_image_dict = dict()
