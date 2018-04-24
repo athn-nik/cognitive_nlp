@@ -3,7 +3,10 @@ import numpy as np
 import itertools
 import scipy.io
 from scipy.stats.stats import pearsonr
-
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 def stable_voxel_selection(calc_st,fmri_data,length,no_stable,trial_ids):
     combs = set(itertools.combinations([0,1,2,3,4,5],2))
@@ -97,4 +100,6 @@ if __name__ == '__main__':
     parser.add_argument('-st_vox',dest="stable_voxels",default=500,required=False)
 
     args = parser.parse_args()
-    dict_final = main(args.calc_st, args.data_dir, args.stable_voxels) 
+    dict_final = main(args.calc_st, args.data_dir, args.stable_voxels)
+    with open('word_voxels.p', 'wb') as fd:
+        pickle.dump(dict_final, fd)
