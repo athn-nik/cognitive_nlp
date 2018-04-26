@@ -19,7 +19,7 @@ def read_data_e1(data_dir):
         disc_pr()
         disc_pr()
         mtd = ff_nv2['meta']
-        print(mtd[0].keys())
+        print(mtd.dtype)
         disc_pr()
         disc_pr()
         disc_pr()
@@ -31,17 +31,17 @@ def read_data_e1(data_dir):
             cnc = ff['labelsConcreteness']
             mtd = ff['meta']
             data_dict={}
-            data_dict_meta={}
             #print(mtd.dtype)
-
-
+            print(len(mtd.item()))
+            #data_dict_meta = wds:mtd
+            # print(wds)
+            # print(vxl)
             for el in ff['labelsConcept']:
                 id=el-1
                 data_dict[(wds[id],pos[id],cnc[id])]=vxl[id]
                 #print((wds[id],pos[id],cnc[id]))
-                data_dict_meta[wds[id]]=ff['meta']
-            #save_pickle(data_dict,fl)
-            #print(data_dict.popitem())
+            # save_pickle(data_dict,fl)
+            # save_pickle(mtd,fl)
 
 # data
 # dict_keys(['__header__', '__version__', '__globals__', 
@@ -55,6 +55,7 @@ def read_data_e1(data_dir):
 def read_data_e2(data_dir):
 
     main_dir = glob.glob(data_dir+'*/*')
+    print(main_dir)
     for fl in main_dir:
         # print("Participant id is: ",fl.strip().split('/')[-2])
         if 'example' in fl.split('/')[-1]:
@@ -72,14 +73,18 @@ def read_data_e2(data_dir):
             topic_id = [x for x, number in zip(topic_id, len(topic_id)*[4]) for _ in range(number)]
             data_dict={}
             for id,el in enumerate(part_topic_id):
-                print((sents[id],part_of_topics[el-1],topics[topic_id[id]-1]))
+                #print((sents[id],part_of_topics[el-1],topics[topic_id[id]-1]))
                 data_dict[(sents[id],part_of_topics[el-1],topics[topic_id[id]-1])]=vxl[id]
             #data_dict_meta[wds[id]]=ff['meta']
         
         
         # (Sentence,subtopic(Apple),topic(Fruit)): voxels
 
-        
+        print(vxl[1])
+        print(topics[1])
+        print(part_of_topics[1])
+        print(sents[1])
+        print(data_dict)
         #save_pickle(data_dict,fl)
         disc_pr()
         #assert check_list(ff['labelsConcept']), "False ordered data"
