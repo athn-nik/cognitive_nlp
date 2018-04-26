@@ -2,21 +2,27 @@ import glob
 import scipy.io as spio
 import argparse
 from utils import disc_pr,check_list,save_pickle
-
-
+import random
+import numpy as np
 
 def read_data_e1(data_dir):
 
     main_dir = glob.glob(data_dir+'*/*')
     for fl in main_dir:
-        print("Participant id is: ",fl.strip().split('/')[-2])
-        print(fl)
+        # print("Participant id is: ",fl.strip().split('/')[-2])
         ff = spio.loadmat(fl,squeeze_me=True)
+        ff_nv2 = spio.loadmat(fl,squeeze_me=False)
         disc_pr()
         print(ff.keys())
         disc_pr()
         assert check_list(ff['labelsConcept']), "False ordered data"
-
+        disc_pr()
+        disc_pr()
+        mtd = ff_nv2['meta']
+        print(mtd[0].keys())
+        disc_pr()
+        disc_pr()
+        disc_pr()
         if 'data' in fl.split('/')[-1]:
             ff['labelsPOS']=[ff['keyPOS'][x-1] for x in ff['labelsPOS']]
             pos = ff['labelsPOS']
@@ -26,15 +32,17 @@ def read_data_e1(data_dir):
             mtd = ff['meta']
             data_dict={}
             data_dict_meta={}
-            print(mtd.item()[8])
-            print(mtd.dtype)
+            #print(mtd.dtype)
 
 
             for el in ff['labelsConcept']:
                 id=el-1
                 data_dict[(wds[id],pos[id],cnc[id])]=vxl[id]
+                #print((wds[id],pos[id],cnc[id]))
                 data_dict_meta[wds[id]]=ff['meta']
-            save_pickle(data_dict,fl)
+            #save_pickle(data_dict,fl)
+            #print(data_dict.popitem())
+
 # data
 # dict_keys(['__header__', '__version__', '__globals__', 
 # 'labels_task', 'labelsConcept', 'keyConcept', 'labelsPOS',
@@ -48,7 +56,7 @@ def read_data_e2(data_dir):
 
     main_dir = glob.glob(data_dir+'*/*')
     for fl in main_dir:
-        print("Participant id is: ",fl.strip().split('/')[-2])
+        # print("Participant id is: ",fl.strip().split('/')[-2])
         if 'example' in fl.split('/')[-1]:
             ff = spio.loadmat(fl,squeeze_me=True)
             print(ff.keys())
@@ -60,15 +68,18 @@ def read_data_e2(data_dir):
             topics = ff['keyPassageCategory']
             part_of_topics =ff['keyPassages']
             vxl = ff['examples']
-            print(part_topic_id,topic_id)
+            
             topic_id = [x for x, number in zip(topic_id, len(topic_id)*[4]) for _ in range(number)]
-            print(part_of_topics,topics)
-            print(topic_id)
             data_dict={}
             for id,el in enumerate(part_topic_id):
                 print((sents[id],part_of_topics[el-1],topics[topic_id[id]-1]))
                 data_dict[(sents[id],part_of_topics[el-1],topics[topic_id[id]-1])]=vxl[id]
             #data_dict_meta[wds[id]]=ff['meta']
+        
+        
+        # (Sentence,subtopic(Apple),topic(Fruit)): voxels
+
+        
         #save_pickle(data_dict,fl)
         disc_pr()
         #assert check_list(ff['labelsConcept']), "False ordered data"
@@ -113,6 +124,12 @@ def read_data_e3(data_dir):
             print(len(ff['labelsPassageForEachSentence']))
 
             data_dict = {}
+            i=1
+            for x in topics:
+                while sents[i] == sents[i-1] :
+                    sents[i]=x
+                    i+=1
+            
             for id,el in enumerate(sents):
                 data_dict[(sents[id], topics[id])]=vxl[id]
 
@@ -127,7 +144,7 @@ if __name__ == '__main__' :
     parser.add_argument('-i','-data_dir',dest="data_dir",required=True)
     parser.add_argument('-e',"--experiment",dest="exp",type=int,required=True)
     args = parser.parse_args()
-    print("I am reading the files from the directory ",args.data_dir)
+    # print("I am reading the files from the directory ",args.data_dir)
     if args.exp == 1:
         read_data_e1(args.data_dir)
     elif args.exp == 2:
