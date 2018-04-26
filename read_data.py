@@ -4,6 +4,9 @@ import argparse
 from utils import disc_pr,check_list,save_pickle
 import random
 import numpy as np
+from itertools import groupby
+
+
 
 def read_data_e1(data_dir):
 
@@ -29,7 +32,6 @@ def read_data_e1(data_dir):
             wds = ff['keyConcept']
             vxl = ff['examples']
             cnc = ff['labelsConcreteness']
-            mtd = ff['meta']
             data_dict={}
             #print(mtd.dtype)
             print(len(mtd.item()))
@@ -43,15 +45,7 @@ def read_data_e1(data_dir):
             # save_pickle(data_dict,fl)
             # save_pickle(mtd,fl)
 
-# data
-# dict_keys(['__header__', '__version__', '__globals__', 
-# 'labels_task', 'labelsConcept', 'keyConcept', 'labelsPOS',
-#  'keyPOS', 'labelsConcreteness', 'meta', 'examples', 
-#  'examples_task', 'tstats_task'])
 
-#  ict_keys(['__header__', '__version__',
-#   '__globals__', 'labelsConcept', 'keyConcept',
-#    'labelsConcreteness', 'meta', 'examples'])
 def read_data_e2(data_dir):
 
     main_dir = glob.glob(data_dir+'*/*')
@@ -60,6 +54,7 @@ def read_data_e2(data_dir):
         # print("Participant id is: ",fl.strip().split('/')[-2])
         if 'example' in fl.split('/')[-1]:
             ff = spio.loadmat(fl,squeeze_me=True)
+            ff_2 = spio.loadmat(fl,squeeze_me=False)
             print(ff.keys())
             disc_pr()
             sents = ff['keySentences']
@@ -69,7 +64,7 @@ def read_data_e2(data_dir):
             topics = ff['keyPassageCategory']
             part_of_topics =ff['keyPassages']
             vxl = ff['examples']
-            
+            mtd = ff_2['meta']
             topic_id = [x for x, number in zip(topic_id, len(topic_id)*[4]) for _ in range(number)]
             data_dict={}
             for id,el in enumerate(part_topic_id):
@@ -80,11 +75,6 @@ def read_data_e2(data_dir):
         
         # (Sentence,subtopic(Apple),topic(Fruit)): voxels
 
-        print(vxl[1])
-        print(topics[1])
-        print(part_of_topics[1])
-        print(sents[1])
-        print(data_dict)
         #save_pickle(data_dict,fl)
         disc_pr()
         #assert check_list(ff['labelsConcept']), "False ordered data"
@@ -110,10 +100,13 @@ def read_data_e2(data_dir):
 def read_data_e3(data_dir):
 
     main_dir = glob.glob(data_dir+'*/*')
+    
     for fl in main_dir:
         print("Participant id is: ",fl.strip().split('/')[-2])
         if 'example' in fl.split('/')[-1]:
             ff = spio.loadmat(fl,squeeze_me=True)
+            ff_v2 = spio.loadmat(fl,squeeze_me=True)
+
             print(ff.keys())
             disc_pr()
             sents = ff['keySentences']
@@ -121,24 +114,37 @@ def read_data_e3(data_dir):
             print(ff['keyPassageCategory'])
             topics = ff['keyPassages']
             vxl = ff['examples']
+            mtd = ff_v2['meta']
             print(ff['keyPassages'])
             print(ff['keySentences'])
 
             print(ff['labelsPassageCategory'])
             print(ff['labelsPassageForEachSentence'])
-            print(len(ff['labelsPassageForEachSentence']))
 
             data_dict = {}
             i=1
-            for x in topics:
-                while sents[i] == sents[i-1] :
-                    sents[i]=x
-                    i+=1
-            
-            for id,el in enumerate(sents):
-                data_dict[(sents[id], topics[id])]=vxl[id]
+            sents_processed = len(sents)*['']
+            sen_lbl = ff['labelsPassageForEachSentence'].tolist()
+            print(len(ff['labelsPassageCategory']))
+            zipped = list(zip(list(set(sen_lbl)),ff['labelsPassageCategory'].tolist()))
+            disc_pr()
+            print(sen_lbl)
+            disc_pr()
+            freq = [sen_lbl.count(key) for key in list(set(sen_lbl))]
+            final_list_lbls = []
+            print(freq)
+            for idx,el in enumerate(zipped):
+                for x in range(freq[idx]):
+                    final_list_lbls.append(el)
+            print(len(final_list_lbls))
 
-            
+            for i,j in enumerate(final_list_lbls):
+                final_list_lbls[i]=(sents[i],final_list_lbls[i][0],ff['keyPassageCategory'][final_list_lbls[i][1]-1])
+            print(final_list_lbls)
+            data_dict={}
+            for i,j in enumerate(final_list_lbls):
+                data_dict[j] = vxl[i]
+
         disc_pr()
        
 
