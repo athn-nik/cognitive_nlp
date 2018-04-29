@@ -113,12 +113,16 @@ def load_exp1(data_dir):
 
     main_dir = glob.glob(data_dir + '/*')
     w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
+    exp_id = int((data_dir.split('/')[-1]).split('_')[0][-1])
+    assert exp_id==1
     for fld in main_dir:
-
+    # for every participant
         data_files = sorted(glob.glob(fld+'/*'))
         dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in range(0, len(data_files), 2)]
-
+        print(fld)
         disc_pr()
+
+        # for every file wordcloud pictures and sentences cases
         for data_group in dt_fls_grouped:
             data_dict,metadata = load_data_meta(data_group)
             word_dict = dict()
@@ -133,11 +137,17 @@ def load_exp23(data_dir):
     main_dir = glob.glob(data_dir + '/*')
 
     exp_id = int((data_dir.split('/')[-1]).split('_')[0][-1])
+    assert exp_id == 2 or exp_id == 3
+
     for fld in main_dir:
+        # for every participant
+
         data_files = sorted(glob.glob(fld + '/*'))
         dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in range(0, len(data_files), 2)]
+
+        # for every file here data and meta
         for data_group in dt_fls_grouped:
-            print('I am here',exp_id)
+
             data_dict,metadata = load_data_meta(data_group)
             word_dict = dict()
             for sent,_ in data_dict.items():
@@ -149,9 +159,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i','-data_dir',dest="data_dir",required=True)
     args = parser.parse_args()
-    # print("I am reading the files from the directory ",args.data_dir)
-    #print(data_dir.split['/'])
-    assert (args.data_dir).strip().split('/')[1] == 'data_processed', 'You should rename your data_directory to data_processed'
+
+    assert 'data_processed' not in args.data_dir, 'You should rename your data_directory to data_processed'
 
     exp = int(((args.data_dir).split('/')[-1]).split('_')[0][-1])
     assert exp ==1 or exp==2 or exp==3
@@ -159,11 +168,10 @@ if __name__ == '__main__':
     if  exp == 1:
         data_gen = load_exp1(args.data_dir)
         disc_pr()
+        # how to access a generator silly boy :*
         for x in data_gen:
             print(x[0])
     elif exp == 2 or exp == 3:
          load_exp23(args.data_dir)
-    # elif exp == 3:
-    #     _exp3(args.data_dir)
-    # else :
-    #     raise ValueError("Illegal value for data folder .Select from{1,2,3}")
+    else :
+        raise ValueError("Illegal value for data folder .Select from{1,2,3}")

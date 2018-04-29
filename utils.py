@@ -60,6 +60,7 @@ def load_data_meta(data_tuple):
         else:
             data = load_pickle(fl)
     assert data,meta
+    # clear or not? morning call
     for k,v in data.items():
         data_cleared[k[0]] = v
 
