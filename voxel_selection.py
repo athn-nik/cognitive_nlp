@@ -4,6 +4,11 @@ import sys
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Ridge
+from utils import load_pickle,disc_pr,load_data_meta
+import argparse
+import glob
+import string
+
 
 
 def load_embeddings(data_file):
@@ -101,5 +106,70 @@ def main(argv):
     np.save(out_file, scores)
 
 
+
+
+
+def load_exp1(data_dir):
+
+    main_dir = glob.glob(data_dir + '/*')
+    w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
+    for fld in main_dir:
+
+        data_files = sorted(glob.glob(fld+'/*'))
+        dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in range(0, len(data_files), 2)]
+
+        print(data_files)
+        print(dt_fls_grouped)
+        disc_pr()
+        for data_group in dt_fls_grouped:
+            print(data_group)
+            data_dict,metadata = load_data_meta(data_group,1)
+            word_dict = dict()
+            for word,_ in data_dict.items():
+                word_dict[word] = w2vec_dict[word]
+            print(data_group[0].split('/')[3])
+            yield data_group[0], data_dict, word_dict, metadata
+
+
+
+def load_exp23(data_dir):
+
+    main_dir = glob.glob(data_dir + '/*')
+
+    exp_id = (data_dir.split('/')[-1]).split('_')[0][-1]
+    for fld in main_dir:
+        data_files = sorted(glob.glob(fld + '/*'))
+        dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in range(0, len(data_files), 2)]
+
+        for data_group in dt_fls_grouped:
+            print(data_group)
+            data_dict,metadata = load_data_meta(data_group,exp_id)
+            word_dict = dict()
+            for sent,_ in data_dict.items():
+                word_dict[sent] = extract_sent_embed(sent)
+            print(data_group[0].split('/')[3])
+            yield data_group[0], data_dict, word_dict, metadata
+
 if __name__ == '__main__':
-    main(sys.argv)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i','-data_dir',dest="data_dir",required=True)
+    args = parser.parse_args()
+    # print("I am reading the files from the directory ",args.data_dir)
+    #print(data_dir.split['/'])
+    assert (args.data_dir).strip().split('/')[1] == 'data_processed', 'You should rename your data_directory to data_processed'
+
+    exp = int(((args.data_dir).split('/')[-1]).split('_')[0][-1])
+    assert exp ==1 or exp==2 or exp==3
+    assert 'exp' in (args.data_dir).split('/')[-1]
+    if  exp == 1:
+        data_gen = load_exp1(args.data_dir)
+        disc_pr()
+        for x in data_gen:
+            print(x[0],x[1])
+    elif exp == 2 or exp == 3:
+         load_exp23(args.data_dir)
+    # elif exp == 3:
+    #     _exp3(args.data_dir)
+    # else :
+    #     raise ValueError("Illegal value for data folder .Select from{1,2,3}")
