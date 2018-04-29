@@ -4,7 +4,7 @@ import sys
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Ridge
-from utils import load_pickle,disc_pr,load_data_meta
+from utils import load_pickle,disc_pr,load_data_meta,extract_sent_embed
 import argparse
 import glob
 import string
@@ -118,16 +118,12 @@ def load_exp1(data_dir):
         data_files = sorted(glob.glob(fld+'/*'))
         dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in range(0, len(data_files), 2)]
 
-        print(data_files)
-        print(dt_fls_grouped)
         disc_pr()
         for data_group in dt_fls_grouped:
-            print(data_group)
-            data_dict,metadata = load_data_meta(data_group,1)
+            data_dict,metadata = load_data_meta(data_group)
             word_dict = dict()
             for word,_ in data_dict.items():
                 word_dict[word] = w2vec_dict[word]
-            print(data_group[0].split('/')[3])
             yield data_group[0], data_dict, word_dict, metadata
 
 
@@ -136,19 +132,17 @@ def load_exp23(data_dir):
 
     main_dir = glob.glob(data_dir + '/*')
 
-    exp_id = (data_dir.split('/')[-1]).split('_')[0][-1]
+    exp_id = int((data_dir.split('/')[-1]).split('_')[0][-1])
     for fld in main_dir:
         data_files = sorted(glob.glob(fld + '/*'))
         dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in range(0, len(data_files), 2)]
-
         for data_group in dt_fls_grouped:
-            print(data_group)
-            data_dict,metadata = load_data_meta(data_group,exp_id)
+            print('I am here',exp_id)
+            data_dict,metadata = load_data_meta(data_group)
             word_dict = dict()
             for sent,_ in data_dict.items():
                 word_dict[sent] = extract_sent_embed(sent)
-            print(data_group[0].split('/')[3])
-            yield data_group[0], data_dict, word_dict, metadata
+            return data_group[0], data_dict, word_dict, metadata
 
 if __name__ == '__main__':
 
@@ -166,7 +160,7 @@ if __name__ == '__main__':
         data_gen = load_exp1(args.data_dir)
         disc_pr()
         for x in data_gen:
-            print(x[0],x[1])
+            print(x[0])
     elif exp == 2 or exp == 3:
          load_exp23(args.data_dir)
     # elif exp == 3:

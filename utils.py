@@ -50,7 +50,7 @@ def extract_sent_embed(sent):
 
     avg_vec/=len(sent_proc)
 
-def load_data_meta(data_tuple,exp_id):
+def load_data_meta(data_tuple):
     data = dict()
     meta = dict()
     data_cleared = dict()
@@ -60,14 +60,7 @@ def load_data_meta(data_tuple,exp_id):
         else:
             data = load_pickle(fl)
     assert data,meta
-    if exp_id ==1 :
-        for k,v in data.items():
-            data_cleared[k[0]] = v
-    elif exp_id == 2:
-        for k,v in data.items():
-            data_cleared[k[0]] = v
-    elif exp_id == 3:
-        for k,v in data.items():
-            data_cleared[k[0]] = v
+    for k,v in data.items():
+        data_cleared[k[0]] = v
 
     return data_cleared,meta
