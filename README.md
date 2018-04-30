@@ -28,4 +28,4 @@ Repository for Cognitive Language Representations
             
 #### Step 2
 
-```python voxel_selection.py -i /data/datasets/FMRI/Perreira/data_processed/exp3_proc or 1 or 2```
+```python voxel_selection.py -i /data/datasets/FMRI/Perreira/data_processed/exp3_proc```
