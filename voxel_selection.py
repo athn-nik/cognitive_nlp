@@ -11,6 +11,17 @@ import glob
 import string
 import os
 
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
+
 def load_embeddings(data_file):
     with open(data_file, 'r') as fd:
         lines = fd.readlines()
@@ -36,8 +47,8 @@ def parse_meta(loaded_mat):
 
 
 def parse_meta1(meta):
-    voxels2neigh = meta['voxelsToNeighbours'][0][0]
-    nneigh = meta['numberOfNeighbors'][0][0].flatten()
+    voxels2neigh = np.expand_dims(meta['voxelsToNeighbours'], axis=0)[0]
+    nneigh = np.expand_dims(meta['numberOfNeighbours'], axis=0)[0]
     return voxels2neigh, nneigh
 
 
@@ -77,8 +88,7 @@ def split_folds(X, y, k=10):
     return X_cv_train, y_cv_train, X_cv_test, y_cv_test
 
 
-def voxel_scores(participant, name, mri_vectors, semantic_vectors, meta):
-    out_file = '{}_{}.npy'.format(participant, name)
+def voxel_scores(mri_vectors, semantic_vectors, meta):
     alpha = 1.0
     n_folds = 10
     voxels2neigh, nneigh = parse_meta1(meta)
@@ -87,6 +97,7 @@ def voxel_scores(participant, name, mri_vectors, semantic_vectors, meta):
     num_concepts = len(mri_vectors.keys())
     scores = np.zeros((semantic_dims, num_voxels))
     for v in range(num_voxels):
+        print('Voxel {} of {}'.format(v, num_voxels))
         X, y = create_X_y(
             v, nneigh, voxels2neigh,
             semantic_vectors, mri_vectors)
@@ -104,10 +115,13 @@ def voxel_scores(participant, name, mri_vectors, semantic_vectors, meta):
             y_pred = ridge.predict(X_te)
             y_pred_z = (StandardScaler(with_mean=True, with_std=True)
                         .fit_transform(y_pred))
-            dot_sum += y_pred_z * y_cv_test[fold]
+            print(y_pred_z.shape)
+            print(y_cv_test[fold].shape)
+            dot_sum += (y_pred_z * y_cv_test[fold]).sum(axis=0)
         scores[:, v] = dot_sum / float(num_concepts)
-    np.save(out_file, scores)
+    return scores
 
+#def calcu
 
 def load_exp1(data_dir):
     main_dir = glob.glob(data_dir + '/*')
@@ -128,7 +142,7 @@ def load_exp1(data_dir):
             word_dict = dict()
             for word, _ in data_dict.items():
                 word_dict[word] = w2vec_dict[word]
-            yield fld, data_group[0], data_dict, word_dict, metadata
+            yield data_group[0], data_dict, word_dict, metadata
 
 
 def load_exp23(data_dir):
@@ -146,31 +160,20 @@ def load_exp23(data_dir):
 
         # for every file here data and meta
         for data_group in dt_fls_grouped:
-
+            print('\t{}'.format(data_group))
             data_dict, metadata = load_data_meta(data_group)
             word_dict = dict()
             for sent, _ in data_dict.items():
                 word_dict[sent] = extract_sent_embed(sent)
-            return fld, data_group[0], data_dict, word_dict, metadata
-
-
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:  # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
-
+            return data_group[0], data_dict, word_dict, metadata
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '-data_dir', dest="data_dir", required=True)
     args = parser.parse_args()
-
-    assert 'data_processed' not in args.data_dir, 'You should rename your data_directory to data_processed'
+    print(args.data_dir)
+    # assert 'data_processed' not in args.data_dir, 'You should rename your {} to data_processed'.format(args.data_dir)
 
     exp = int((args.data_dir.split('/')[-1]).split('_')[0][-1])
     assert exp == 1 or exp == 2 or exp == 3
@@ -181,6 +184,11 @@ if __name__ == '__main__':
         # how to access a generator silly boy :*
         for x in data_gen:
             print(x[0])
+            out_file = os.path.join('./', 'voxels_scores', '{}.npy'.format(x[0].split('.')[0]))
+            out_dir = '/'.join(out_file.split('/')[:-1])
+            mkdir_p(out_dir)
+            vscores = voxel_scores(x[1], x[2], x[3])
+            np.save(out_file, vscores)
     elif exp == 2 or exp == 3:
         load_exp23(args.data_dir)
     else:
