@@ -1,17 +1,20 @@
 import numpy as np
 from decoder import regression_decoder
 import argparse
-
+import heapq
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '-data_dir', dest="data_dir", required=False)
     args = parser.parse_args()
     # assert 'data_processed' not in args.data_dir, 'You should rename your {} to data_processed'.format(args.data_dir)
-    x=np.load('/home/nathan/Desktop/M01/data_180concepts_sentences.npy')
-    print(x)
-    print(x.shape)
-    sys.exit(1)
+    scores=np.load('/home/nathan/Desktop/M01/data_180concepts_sentences.npy')
+
+    max_vxl_scr=np.amax(scores, axis=0)
+    #vxl_id = heapq.nlargest(5000, range(len(max_vxl_scr)), max_vxl_scr.take) order preserved O(klogn)
+    stable_vxl = np.argpartition(scores, -5000)[-5000:] # O(n) order unpreserved presrved with sort after in O(klogk_+n)
+
+    # toy examples
     wds = np.random.rand(4, 300)
     vxl = np.random.rand(4, 5000)
     weights,l = regression_decoder(vxl,wds)
