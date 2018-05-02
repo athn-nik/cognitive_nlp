@@ -46,21 +46,31 @@ def regression_decoder(train_data,train_targets):
     because we avoid the large inversion of the voxels/voxels matrix
 
     '''
-
-    params = [1, .5, 5, 0.1, 10, 0.01, 100, 0.001, 1000, 0.0001, 10000, 0.00001,
-              100000, 0.000001, 1000000]
-    words = train_data.shape[0]
-    emb_dim = train_targets.shape[1]
-
-    h_x = np.ones((train_data.shape[0], train_data.shape[1]+1))
+    # add one in the end of train data for the bias term
+    h_x = np.ones((train_data.shape[0], train_data.shape[1] + 1))
     h_x[:, :-1] = train_data
     train_data = h_x
 
-    cv_err = np.zeros(len(params), emb_dim)
+    dims_vxl = train_data.shape[1]
+    emb_dim = train_targets.shape[1]
+    examples = train_data.shape[0]
+    assert train_data.shape[0]==train_targets.shape[0],'Same numbers of examples for data and targets '
+
+
+    params = [1, .5, 5, 0.1, 10, 0.01, 100, 0.001, 1000, 0.0001, 10000, 0.00001,
+              100000, 0.000001, 1000000]
+
+    n_words = train_data.shape[0]
+
+    cv_err = np.zeros((len(params), emb_dim))
+
     K = np.matmul(train_data, train_data.T)
     U,D,V = svd(K)
+
     D = np.eye(U.shape[1], V.shape[0])*D
+
     for idx,reg_param in enumerate(params):
+
         dlambda = D + reg_param*np.eye(D.shape[0], D.shape[1])
         dlambdaInv = np.diag(1/np.diag(dlambda))
         klambdainv = np.matmul(np.matmul(V,dlambdaInv), U.T)
@@ -69,26 +79,30 @@ def regression_decoder(train_data,train_targets):
         S = np.matmul(train_data, K_p)
 
         weights = np.matmul(K_p, train_targets)
-
         # Snorm = repmat(1 - diag(S), 1, train_targets.shape[1])
-        Snorm = np.kron(np.ones(1, train_targets.shape[1]), 1-np.diag(S))
+        Snorm = np.tile((1-np.diag(S)).reshape(np.diag(S).shape[0],1),(1,emb_dim))
+
+        #Snorm = np.tile(1-np.diag(S),(1,emb_dim))
+        #print(Snorm.shape)
+
         Y_diff = train_targets - np.matmul(train_data, weights)
-        Y_diff = np.divide(Y_diff, Snorm)
+        Y_diff = Y_diff/Snorm
 
-        cv_err[idx, :]=(1/train_data.shape[0])*np.sum(np.multiply(Y_diff, Y_diff)) # elementwise
+        cv_err[idx, :]=(1/examples)*np.sum(Y_diff*Y_diff) # elementwise
 
-    minerridx = np.argmin(cv_err)
+    minerridx = cv_err.argmin(axis=0)
     # minerr = np.amin(cv_err)
-    reg_dim = np.zeros(1, train_targets.shape[1])
+    reg_dim = np.zeros((1, emb_dim))
 
-    for i,j in enumerate(train_targets.shape[1]):
-
+    for i in range(emb_dim):
         reg_param = params[minerridx[i]]
-        reg_dim[i]=reg_param
+        reg_dim[0,i]=reg_param
 
         dlambda = D + reg_param*np.eye(D.shape[0], D.shape[1])
         dlambdaInv = np.diag(1/np.diag(dlambda))
         klambdainv = np.matmul(np.matmul(V, dlambdaInv), U.T)
 
         weights[:,i] = np.matmul(np.matmul(train_data.T, klambdainv), train_targets[:,i])
+    print(weights.shape)
+    print(reg_dim)
     return weights,reg_dim
