@@ -60,7 +60,8 @@ def load_voxels(mat_file):
 
 
 def search_light(v, nneigh, voxels2neigh):
-    neigh = voxels2neigh[v, :nneigh[v]]
+    neigh = voxels2neigh[v, :nneigh[v]] - 1
+    assert np.all(neigh >= 0)
     return neigh
 
 
@@ -115,8 +116,6 @@ def voxel_scores(mri_vectors, semantic_vectors, meta):
             y_pred = ridge.predict(X_te)
             y_pred_z = (StandardScaler(with_mean=True, with_std=True)
                         .fit_transform(y_pred))
-            print(y_pred_z.shape)
-            print(y_cv_test[fold].shape)
             dot_sum += (y_pred_z * y_cv_test[fold]).sum(axis=0)
         scores[:, v] = dot_sum / float(num_concepts)
     return scores
