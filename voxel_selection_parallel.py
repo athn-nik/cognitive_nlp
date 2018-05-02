@@ -123,48 +123,43 @@ def voxel_scores(mri_vectors, semantic_vectors, meta):
 #def calcu
 
 def load_exp1(data_dir):
-    main_dir = glob.glob(data_dir + '/*')
     w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
-    exp_id = int((data_dir.split('/')[-1]).split('_')[0][-1])
+    exp_id = int((data_dir.split('/')[-2]).split('_')[0][-1])
     assert exp_id == 1
-    for fld in main_dir:
-        # for every participant
-        data_files = sorted(glob.glob(fld + '/*'))
-        dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in
-                          range(0, len(data_files), 2)]
-        print(fld)
-        disc_pr()
+    fld = data_dir
+    # Run one participant
+    data_files = sorted(glob.glob(fld + '/*'))
+    dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in
+                      range(0, len(data_files), 2)]
+    print(fld)
+    disc_pr()
 
-        # for every file wordcloud pictures and sentences cases
-        for data_group in dt_fls_grouped:
-            data_dict, metadata = load_data_meta(data_group)
-            word_dict = dict()
-            for word, _ in data_dict.items():
-                word_dict[word] = w2vec_dict[word]
-            yield data_group[0], data_dict, word_dict, metadata
+    # for every file wordcloud pictures and sentences cases
+    for data_group in dt_fls_grouped:
+        data_dict, metadata = load_data_meta(data_group)
+        word_dict = dict()
+        for word, _ in data_dict.items():
+            word_dict[word] = w2vec_dict[word]
+        yield data_group[0], data_dict, word_dict, metadata
 
 
 def load_exp23(data_dir):
-    main_dir = glob.glob(data_dir + '/*')
-
-    exp_id = int((data_dir.split('/')[-1]).split('_')[0][-1])
+    exp_id = int((data_dir.split('/')[-2]).split('_')[0][-1])
     assert exp_id == 2 or exp_id == 3
+    fld = data_dir
+    # Run one participant
+    data_files = sorted(glob.glob(fld + '/*'))
+    dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in
+                      range(0, len(data_files), 2)]
 
-    for fld in main_dir:
-        # for every participant
-
-        data_files = sorted(glob.glob(fld + '/*'))
-        dt_fls_grouped = [tuple(data_files[i:i + 2]) for i in
-                          range(0, len(data_files), 2)]
-
-        # for every file here data and meta
-        for data_group in dt_fls_grouped:
-            print('\t{}'.format(data_group))
-            data_dict, metadata = load_data_meta(data_group)
-            word_dict = dict()
-            for sent, _ in data_dict.items():
-                word_dict[sent] = extract_sent_embed(sent)
-            return data_group[0], data_dict, word_dict, metadata
+    # for every file here data and meta
+    for data_group in dt_fls_grouped:
+        print('\t{}'.format(data_group))
+        data_dict, metadata = load_data_meta(data_group)
+        word_dict = dict()
+        for sent, _ in data_dict.items():
+            word_dict[sent] = extract_sent_embed(sent)
+        yield data_group[0], data_dict, word_dict, metadata
 
 if __name__ == '__main__':
 
@@ -174,9 +169,9 @@ if __name__ == '__main__':
     print(args.data_dir)
     # assert 'data_processed' not in args.data_dir, 'You should rename your {} to data_processed'.format(args.data_dir)
 
-    exp = int((args.data_dir.split('/')[-1]).split('_')[0][-1])
+    exp = int((args.data_dir.split('/')[-2]).split('_')[0][-1])
     assert exp == 1 or exp == 2 or exp == 3
-    assert 'exp' in args.data_dir.split('/')[-1]
+    assert 'exp' in args.data_dir.split('/')[-2]
     if exp == 1:
         data_gen = load_exp1(args.data_dir)
         disc_pr()
