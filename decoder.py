@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg import svd
-
+from utils import disc_pr
 from scipy.stats import pearsonr
 
 
@@ -86,10 +86,19 @@ def regression_decoder(train_data,train_targets):
         #print(Snorm.shape)
 
         Y_diff = train_targets - np.matmul(train_data, weights)
+        disc_pr()
+        disc_pr()
+        print(Y_diff)
+        disc_pr()
+        disc_pr()
         Y_diff = Y_diff/Snorm
-
+        print(Y_diff)
+        disc_pr()
+        disc_pr()
         cv_err[idx, :]=(1/examples)*np.sum(Y_diff*Y_diff) # elementwise
-
+    disc_pr()
+    print (cv_err)
+    disc_pr()
     minerridx = cv_err.argmin(axis=0)
     # minerr = np.amin(cv_err)
     reg_dim = np.zeros((1, emb_dim))
@@ -103,6 +112,5 @@ def regression_decoder(train_data,train_targets):
         klambdainv = np.matmul(np.matmul(V, dlambdaInv), U.T)
 
         weights[:,i] = np.matmul(np.matmul(train_data.T, klambdainv), train_targets[:,i])
-    print(weights.shape)
-    print(reg_dim)
+
     return weights,reg_dim

@@ -11,7 +11,7 @@ if __name__ == '__main__':
     parser.add_argument('-i', '-data_dir', dest="data_dir", required=False)
     args = parser.parse_args()
     # assert 'data_processed' not in args.data_dir, 'You should rename your {} to data_processed'.format(args.data_dir)
-    scores_clouds = np.load('/home/nathan/Desktop/M01/data_180concepts_wordclouds.npy')
+    scores_clouds = np.load('/home/nathan/Desktop/M01/data_180concepts_pictures.npy')
 
     max_vxl_scr_clouds = np.amax(scores_clouds, axis=0)
     print(max_vxl_scr_clouds.shape)
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     #vxl_id = heapq.nlargest(5000, range(len(max_vxl_scr)), max_vxl_scr.take) order preserved O(klogn)
     stable_vxl_wcl = np.argpartition(max_vxl_scr_clouds, -5000)[-5000:] # O(n) order unpreserved presrved with sort after in O(klogk_+n)
 
-    wcld = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/M01/data_180concepts_wordclouds.mat.pkl')
+    wcld = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/M01/data_180concepts_pictures.mat.pkl')
 
 
     w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
@@ -38,14 +38,17 @@ if __name__ == '__main__':
         train_targs[i,:] = word_dict[w]
     # toy examples
     #wds = np.random.rand(4, 300)
-    train_data = (StandardScaler(with_mean=True, with_std=True)
-            .fit_transform(train_data))
-    train_targs = (StandardScaler(with_mean=True, with_std=True)
-            .fit_transform(train_targs))
+
+    sum1 = train_data.sum(axis=0)
+    for x in range(train_data.shape[1]):
+        train_data[:,x]-= sum1[x]
+    sum2 = train_data.sum(axis=0)
+    for x in range(train_targs.shape[1]):
+        train_targs[:, x] -= sum2[x]
     #vxl = np.random.rand(4, 5000)
     weights,l = regression_decoder(train_data,train_targs)
-    print(weights)
-
+    print(l)
+    scores_clouds = np.save('/home/nathan/Desktop/M01/weights_pictures.npy',weights)
     # exp = int((args.data_dir.split('/')[-1]).split('_')[0][-1])
     # assert exp == 1 or exp == 2 or exp == 3
     # assert 'exp' in args.data_dir.split('/')[-1]
