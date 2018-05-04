@@ -56,96 +56,96 @@ for wt in wt_lst:
         #     word = 'harbor'
         # if x[0] == 'colour' or x[1] == 'colour':
         #     word = 'color'
-        e1_t=glove_model[x[0]]
-        e2_t=glove_model[x[1]]
+        e1_t = glove_model[x[0]]
+        e2_t = glove_model[x[1]]
         #e1_t=e1_t.reshape(emb_dim,1)
         #e2_t=e2_t.reshape(emb_dim,1)
 
-        pred_1_t=np.dot(weights_extracted,e1_t)
-        pred_2_t=np.dot(weights_extracted,e2_t)
+        pred_1_t = np.dot(weights_extracted,e1_t)
+        pred_2_t = np.dot(weights_extracted,e2_t)
 
-        diff_t=abs(pred_2_t-pred_1_t)**2
-        dist_t=diff_t.reshape(len(diff_t))
-        train_data1[i,:]=pred_1_t.reshape(s_v+1)
-        train_data2[i,:]=pred_2_t.reshape(s_v+1)
+        diff_t = pred_2_t*pred_1_t
+        dist_t = diff_t.reshape(len(diff_t))
+        train_data1[i,:] = pred_1_t.reshape(s_v+1)
+        train_data2[i,:] = pred_2_t.reshape(s_v+1)
         targets[i,0]=float(train_scores[i])
 
-    train_data = (abs(train_data1-train_data2))**2
-    train_data=(StandardScaler(with_mean=True, with_std=True).fit_transform(train_data))
+    train_data = (train_data1*train_data2)
+    train_data = (StandardScaler(with_mean=True, with_std=True).fit_transform(train_data))
 
     model = linear_model.Ridge(alpha=1,fit_intercept=True,normalize=True)
 
     model.fit(train_data,targets)
-    mle_est=model.coef_
+    mle_est = model.coef_
     #bias=model.intercept_
     #bias=np.array(bias)
     #mle_est=np.append(mle_est,bias)
 
-    sum1=0
-    estimated_similarity=[]
-    real=[]
-    bsl=[]
-    test_data=np.zeros((len(test_wds),s_v+1))
-    test_data1=np.zeros((len(test_wds),s_v+1))
-    test_data2=np.zeros((len(test_wds),s_v+1))
-    j=0
+    sum1 = 0
+    estimated_similarity = []
+    real = []
+    bsl = []
+    test_data = np.zeros((len(test_wds),s_v+1))
+    test_data1 = np.zeros((len(test_wds),s_v+1))
+    test_data2 = np.zeros((len(test_wds),s_v+1))
+    j = 0
     for j,x in enumerate(test_wds):
-        e1_te=glove_model[x[0]]
+        e1_te = glove_model[x[0]]
         #e1_te=e1_te.reshape(s_v,1)#26
-        e2_te=glove_model[x[1]]
+        e2_te = glove_model[x[1]]
         #e2_te=e2_te.reshape(s_v,1)
 
         try:
-            bsl_pair=1-spatial.distance.cosine(glove_model[x[0]],glove_model[x[1]])
+            bsl_pair = 1-spatial.distance.cosine(glove_model[x[0]],glove_model[x[1]])
             bsl.append(bsl_pair)
         except KeyError:
             bsl.append(0.5)
 
-        pred_1_te=np.dot(weights_extracted,e1_te)
-        pred_2_te=np.dot(weights_extracted,e2_te)
+        pred_1_te = np.dot(weights_extracted,e1_te)
+        pred_2_te = np.dot(weights_extracted,e2_te)
 
 
-        diff_te=abs(pred_2_te-pred_1_te)**2
-        diff_te=np.append(diff_te,1)
-        helper=diff_te.reshape(len(diff_te))
-        test_data1[j,:]=pred_1_te.reshape(s_v+1)
-        test_data2[j,:]=pred_2_te.reshape(s_v+1)
+        diff_te = pred_2_te*pred_1_te
+        diff_te = np.append(diff_te,1)
+        helper = diff_te.reshape(len(diff_te))
+        test_data1[j,:] = pred_1_te.reshape(s_v+1)
+        test_data2[j,:] = pred_2_te.reshape(s_v+1)
 
         #test_data[j,:]=helper
         #est_sim=np.dot(diff_te,mle_est)
         #estimated_similarity.append(est_sim)
         real.append(float(test_scores[j]))
-    test_data = abs(test_data1-test_data2)**2
+    test_data = test_data1*test_data2
     test_data = (StandardScaler(with_mean=True, with_std=True).fit_transform(test_data))
     #predictions=model.predict(test_data)
     #for i in predictions:
         #print(i)
     #    estimated_similarity.append(i[0])
     for i in range(test_data.shape[0]):
-        est_sim=np.dot(test_data[i,:],mle_est.T)
+        est_sim = np.dot(test_data[i,:],mle_est.T)
         estimated_similarity.append(est_sim[0])
     #print(len(estimated_similarity))
 
     #bsl=[x[0] for x in bsl]
-    c=0
+    c = 0
 
     for i in range(len(real)):
         #print(real[i],estimated_similarity[i],bsl[i])
         if abs(estimated_similarity[i]-real[i])<abs(bsl[i]-real[i]):
-            c+=1
+            c += 1
     print(c*1.0/len(test_wds))
-    real_low=[x for x in real if x<0.1]
-    real_low_index=[real.index(x) for x in real if x<0.1]
-    real_high=[x for x in real if x>0.85]
-    real_high_index=[real.index(x) for x in real if x>0.85]
+    real_low = [x for x in real if x<0.1]
+    real_low_index = [real.index(x) for x in real if x<0.1]
+    real_high = [x for x in real if x>0.85]
+    real_high_index = [real.index(x) for x in real if x>0.85]
 
-    estima_low= [estimated_similarity[idx] for idx in real_low_index]
-    estima_high= [estimated_similarity[idx] for idx in real_high_index]
-    bsl_low= [bsl[idx] for idx in real_low_index]
-    bsl_high= [bsl[idx] for idx in real_high_index]
-    real=(np.array(real)).reshape(len(test_wds),1)
-    estimated_similarity=(np.array(estimated_similarity)).reshape(len(test_wds),1)
-    bsl=(np.array(bsl)).reshape(len(test_wds),1)
+    estima_low = [estimated_similarity[idx] for idx in real_low_index]
+    estima_high = [estimated_similarity[idx] for idx in real_high_index]
+    bsl_low = [bsl[idx] for idx in real_low_index]
+    bsl_high = [bsl[idx] for idx in real_high_index]
+    real = (np.array(real)).reshape(len(test_wds),1)
+    estimated_similarity = (np.array(estimated_similarity)).reshape(len(test_wds),1)
+    bsl = (np.array(bsl)).reshape(len(test_wds),1)
 
     # Calculation of scores
     # All dataset
