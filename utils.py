@@ -192,15 +192,32 @@ def check_list(lst):
 
 def fetch_embeds(wds_list,embed_fl='../word_embeddings/glove.42B.300d.txt'):
     wds_vec=dict()
-    for line in embed_fl:
-        wd = line.strip.split()[0]
-        vec = line.strip.split()[1:]
-        if wd in wds_list:
-            wds_vec[wd] = vec
-            wds_list.remove(wd)
-            if wds_list == []:
-                return wds_vec
+    if isinstance(wds_list,str):
+        wds_list=[wds_list]
+    with open(embed_fl,'r') as fl:
+        for line in fl:
+            wd = line.strip().split()[0]
+            vec = [float(x) for x in line.strip().split()[1:]]
+            if wd in wds_list:
+                wds_vec[wd] = vec
+                wds_list.remove(wd)
+                if wds_list == []:
+                    return wds_vec
+
     return "Not all words found."
+
+
+def loadGloveModel(gloveFile='../word_embeddings/glove.42B.300d.txt'):
+    print("Loading Glove Model")
+    f = open(gloveFile,'r')
+    model = {}
+    for line in f:
+        splitLine = line.split()
+        word = splitLine[0]
+        embedding = np.array([float(val) for val in splitLine[1:]])
+        model[word] = embedding
+    return model
+
 
 
 
