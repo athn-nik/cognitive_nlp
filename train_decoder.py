@@ -5,6 +5,41 @@ import heapq
 from utils import load_pickle
 from sklearn.preprocessing import StandardScaler
 
+
+def evaluation(i1,p1,i2,p2,metric='pearson'):
+ #print("Cosine Similarity Calculation...")
+  #Normalize vectors
+    '''i1[:]= [x*x for x in i1]
+    magni1=np.sum(i1)
+    i1[:]= [x/magni1 for x in i1]
+    i2[:]= [x*x for x in i2]
+    magni2=np.sum(i2)
+    i2[:]= [x/magni2 for x in i2]
+    p1[:]= [x*x for x in p1]
+    magnp1=np.sum(p1)
+    p1[:]= [x/magnp1 for x in p1]
+    p2[:]= [x*x for x in p2]
+    magnp2=np.sum(p2)
+    p2[:]= [x/magnp2 for x in p2]'''
+ #print(spatial.distance.cosine(p1,i2),spatial.distance.cosine(p2,i1),spatial.distance.cosine(i2,p2),spatial.distance.cosine(i1,p1))
+    if metric=='cosine':
+        bad=2-spatial.distance.cosine(p1,i2)-spatial.distance.cosine(p2,i1)
+        good=2-spatial.distance.cosine(i2,p2)-spatial.distance.cosine(i1,p1)
+    elif metric=='pearson':
+        bad=scipy.stats.pearsonr(p1,i2)+scipy.stats.pearsonr(p2,i1)
+        good=scipy.stats.pearsonr(i2,p2)+scipy.stats.pearsonr(i1,p1)
+    else:
+        print("You have given wrong parameter regarding similarity metric!")
+        print("give pearson or cosine")
+        sys.exit()
+    if (bad<=good):
+        return 1
+    else :
+        return 0
+
+
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
