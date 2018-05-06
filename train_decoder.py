@@ -2,7 +2,7 @@ import numpy as np
 from decoder import regression_decoder
 import argparse
 import heapq
-from utils import load_pickle
+from utils import load_pickle,save_pickle
 from sklearn.preprocessing import StandardScaler
 
 
@@ -46,25 +46,27 @@ if __name__ == '__main__':
     parser.add_argument('-i', '-data_dir', dest="data_dir", required=False)
     args = parser.parse_args()
     # assert 'data_processed' not in args.data_dir, 'You should rename your {} to data_processed'.format(args.data_dir)
-    scores_clouds = np.load('/home/nathan/Desktop/M01/data_180concepts_pictures.npy')
-
-    max_vxl_scr_clouds = np.amax(scores_clouds, axis=0)
-    print(max_vxl_scr_clouds.shape)
-
-    #vxl_id = heapq.nlargest(5000, range(len(max_vxl_scr)), max_vxl_scr.take) order preserved O(klogn)
-    stable_vxl_wcl = np.argpartition(max_vxl_scr_clouds, -5000)[-5000:] # O(n) order unpreserved presrved with sort after in O(klogk_+n)
-
-    wcld = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/M01/data_180concepts_pictures.mat.pkl')
+    lst = [1,2,3,4,5,6,7,8,9]
+    for x in lst:
+        scores = np.load('/home/nathan/Desktop/voxels_scores/data_processed/exp1_proc/M0'+str(x)+'/data_180concepts_sentences.npy')
 
 
-    w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
-    wcld_wds = dict()
+        max_vxl_scr = np.amax(scores, axis=0)
+
+        vxl_id = heapq.nlargest(5000, range(len(max_vxl_scr)), max_vxl_scr.take) # order preserved O(klogn)
+        #stable_vxl_wcl = np.argpartition(max_vxl_scr_clouds, -5000)[-5000:] # O(n) order unpreserved presrved with sort after in O(klogk_+n)
+        data_file = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/M0'+str(x)+'/data_180concepts_sentences.mat.pkl')
+
+        data_dict = dict()
+        for word, v in data_file.items():
+            data_dict[word[0]] = v[vxl_id]
+
+        save_pickle(data_dict,'/home/nathan/Desktop/final_data/exp1/M0'+str(x)+'/data_180concepts_sentences')
+    sys.exit()
     word_dict= dict()
-    for word, v in wcld.items():
-        wcld_wds[word[0]] = v[stable_vxl_wcl]
+    w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
     for word, _ in wcld.items():
         word_dict[word[0]] = w2vec_dict[word[0]]
-
     wd_seq = word_dict.keys()
     train_data = np.zeros((len(wd_seq),5000))
     train_targs = np.zeros((len(wd_seq),300))
@@ -73,6 +75,9 @@ if __name__ == '__main__':
         train_targs[i,:] = word_dict[w]
     # toy examples
     #wds = np.random.rand(4, 300)
+
+
+    # Normalization of data across different dimensions
 
     sum1 = train_data.sum(axis=0)
     for x in range(train_data.shape[1]):
