@@ -46,23 +46,21 @@ if __name__ == '__main__':
     parser.add_argument('-i', '-data_dir', dest="data_dir", required=False)
     args = parser.parse_args()
     # assert 'data_processed' not in args.data_dir, 'You should rename your {} to data_processed'.format(args.data_dir)
-    lst = [1,2,3,4,5,6,7,8,9]
-    for x in lst:
-        scores = np.load('/home/nathan/Desktop/voxels_scores/data_processed/exp1_proc/M0'+str(x)+'/data_180concepts_sentences.npy')
+    scores = np.load('/home/nathan/Desktop/voxels_scores/data_processed/exp1_proc/M0'+str(x)+'/data_180concepts_sentences.npy')
 
 
-        max_vxl_scr = np.amax(scores, axis=0)
+    max_vxl_scr = np.amax(scores, axis=0)
 
-        vxl_id = heapq.nlargest(5000, range(len(max_vxl_scr)), max_vxl_scr.take) # order preserved O(klogn)
-        #stable_vxl_wcl = np.argpartition(max_vxl_scr_clouds, -5000)[-5000:] # O(n) order unpreserved presrved with sort after in O(klogk_+n)
-        data_file = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/M0'+str(x)+'/data_180concepts_sentences.mat.pkl')
+    vxl_id = heapq.nlargest(5000, range(len(max_vxl_scr)), max_vxl_scr.take) # order preserved O(klogn)
+    #stable_vxl_wcl = np.argpartition(max_vxl_scr_clouds, -5000)[-5000:] # O(n) order unpreserved presrved with sort after in O(klogk_+n)
+    data_file = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/M0'+str(x)+'/data_180concepts_sentences.mat.pkl')
 
-        data_dict = dict()
-        for word, v in data_file.items():
-            data_dict[word[0]] = v[vxl_id]
+    data_dict = dict()
+    for word, v in data_file.items():
+        data_dict[word[0]] = v[vxl_id]
 
-        save_pickle(data_dict,'/home/nathan/Desktop/final_data/exp1/M0'+str(x)+'/data_180concepts_sentences')
-    sys.exit()
+    #save_pickle(data_dict,'/home/nathan/Desktop/final_data/exp1/M0'+str(x)+'/data_180concepts_sentences')
+
     word_dict= dict()
     w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
     for word, _ in wcld.items():
