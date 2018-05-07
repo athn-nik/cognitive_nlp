@@ -1,3 +1,4 @@
+# coding=utf-8
 import numpy as np
 from decoder import regression_decoder
 import argparse
@@ -46,41 +47,10 @@ if __name__ == '__main__':
     parser.add_argument('-i', '-data_dir', dest="data_dir", required=False)
     args = parser.parse_args()
     # assert 'data_processed' not in args.data_dir, 'You should rename your {} to data_processed'.format(args.data_dir)
-    fdrs=[1,2,3,4,5,6,7,8,9]
-    for fld in fdrs:
-        data_dict = dict()
-        data_file1 = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/P01/data_180concepts_sentences.mat.pkl')
-        data_file2 = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/P01/data_180concepts_wordclouds.mat.pkl')
-        data_file3 = load_pickle('/home/nathan/Desktop/emnlp18/data_processed/exp1_proc/P01/data_180concepts_pictures.mat.pkl')
+    fdrs=[1]
 
-        data_dict1 = dict()
-        for word, v in data_file1.items():
-            data_dict1[word[0]] = v
-        data_dict2 = dict()
-        for word, v in data_file2.items():
-            data_dict2[word[0]] = v
-        data_dict3 = dict()
-        for word, v in data_file3.items():
-            data_dict3[word[0]] = v
-
-        for word, v in data_dict3.items():
-            data_dict[word] = (data_dict1[word]+data_dict2[word]+data_dict3[word])/3
-
-        scores = np.load('/home/nathan/Desktop/voxels_scores/data_processed/exp1_proc/P01/data_180concepts_wordclouds.npy')
-
-
-        max_vxl_scr = np.amax(scores, axis=0)
-
-        vxl_id = heapq.nlargest(5000, range(len(max_vxl_scr)), max_vxl_scr.take) # order preserved O(klogn)
-        #stable_vxl_wcl = np.argpartition(max_vxl_scr_clouds, -5000)[-5000:] # O(n) order unpreserved presrved with sort after in O(klogk_+n)
-
-
-        save_pickle(data_dict,'/home/nathan/Desktop/final_data/exp1/P01/data_180concepts_average')
-    sys.exit()
     word_dict= dict()
     w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
-    for word, _ in wcld.items():
-        word_dict[word[0]] = w2vec_dict[word[0]]
     wd_seq = word_dict.keys()
     train_data = np.zeros((len(wd_seq),5000))
     train_targs = np.zeros((len(wd_seq),300))
