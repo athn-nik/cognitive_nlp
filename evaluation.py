@@ -58,8 +58,6 @@ for wt in wt_lst:
         #     word = 'color'
         e1_t = glove_model[x[0]]
         e2_t = glove_model[x[1]]
-        #e1_t=e1_t.reshape(emb_dim,1)
-        #e2_t=e2_t.reshape(emb_dim,1)
 
         pred_1_t = np.dot(weights_extracted,e1_t)
         pred_2_t = np.dot(weights_extracted,e2_t)
