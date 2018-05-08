@@ -34,7 +34,7 @@ emb_dim=300
 
 glove_model=load_pickle('../word_embeddings/glove300d.42B.MEN.pkl')
 
-
+glob.glob(data_dir+'/*/weights*')
 for wt in wt_lst:
     sum_pear=sum_spear=sum_pear_l=sum_spear_l=sum_pear_m=sum_spear_m=sum_pear_h=sum_spear_h=0
     sum_bsl_s=sum_bsl_p=bsl_sum_pear_l=bsl_sum_spear_l=bsl_sum_pear_h=bsl_sum_spear_h=0

@@ -43,35 +43,43 @@ def evaluation(i1,p1,i2,p2,metric='pearson'):
 
 if __name__ == '__main__':
     '''
+    
     Example run :
     
     python train_decoder.py - i /path/to/final_data/exp_id/M01/data_180concepts_wordclouds.pkl
+    
     '''
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '-data_dir', dest="data_dir", required=True)
     args = parser.parse_args()
+
     data_structure = '/'.join((args.data_dir).split('/')[-4:-2])
     assert  'final_data/exp1' or 'final_data/exp3' or 'final_data/exp2' == data_structure not in args.data_dir, \
            'You should rename your {} to data_processed'.format(args.data_dir)
+
     # load data
     data_dict = load_pickle(args.data_dir)
+
+    # weights name and path to save them
     if args.data_dir.split('/')[-3][-1]=='1':
         weight_file = '/'.join(args.data_dir.split('/')[:-1])+'/weights_'+(args.data_dir.split('/')[-1]).split('_')[-1].split('.')[0]
         print(weight_file)
     else:
         weight_file = '/'.join(args.data_dir.split('/')[:-1]) + '/weights_sentences'
 
-    word_dict= dict()
+    # load data and convert to numpy
     w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
     wd_seq = data_dict.keys()
 
     train_data = np.zeros((len(wd_seq),5000))
     train_targs = np.zeros((len(wd_seq),300))
+
     for i,w in enumerate(wd_seq):
         train_data[i,:] = data_dict[w]
         train_targs[i,:] = w2vec_dict[w]
-    # Normalization of data across different dimensions
 
+    # Normalization of data across different dimensions
     sum1 = train_data.sum(axis=0)
     for x in range(train_data.shape[1]):
         train_data[:,x]-= sum1[x]
@@ -81,7 +89,4 @@ if __name__ == '__main__':
 
     # Train to learn the weights
     weights,l = regression_decoder(train_data,train_targs)
-    print(l)
     scores_clouds = np.save(weight_file+'.npy',weights)
-
-
