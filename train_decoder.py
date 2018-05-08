@@ -42,25 +42,34 @@ def evaluation(i1,p1,i2,p2,metric='pearson'):
 
 
 if __name__ == '__main__':
-
+    '''
+    Example run :
+    
+    python train_decoder.py - i /path/to/final_data/exp_id/M01/data_180concepts_wordclouds.pkl
+    '''
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '-data_dir', dest="data_dir", required=False)
+    parser.add_argument('-i', '-data_dir', dest="data_dir", required=True)
     args = parser.parse_args()
-    # assert 'data_processed' not in args.data_dir, 'You should rename your {} to data_processed'.format(args.data_dir)
-    fdrs=[1]
+    data_structure = '/'.join((args.data_dir).split('/')[-4:-2])
+    assert  'final_data/exp1' or 'final_data/exp3' or 'final_data/exp2' == data_structure not in args.data_dir, \
+           'You should rename your {} to data_processed'.format(args.data_dir)
+    # load data
+    data_dict = load_pickle(args.data_dir)
+    if args.data_dir.split('/')[-3][-1]=='1':
+        weight_file = '/'.join(args.data_dir.split('/')[:-1])+'/weights_'+(args.data_dir.split('/')[-1]).split('_')[-1].split('.')[0]
+        print(weight_file)
+    else:
+        weight_file = '/'.join(args.data_dir.split('/')[:-1]) + '/weights_sentences'
 
     word_dict= dict()
     w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
-    wd_seq = word_dict.keys()
+    wd_seq = data_dict.keys()
+
     train_data = np.zeros((len(wd_seq),5000))
     train_targs = np.zeros((len(wd_seq),300))
     for i,w in enumerate(wd_seq):
-        train_data[i,:] = wcld_wds[w]
-        train_targs[i,:] = word_dict[w]
-    # toy examples
-    #wds = np.random.rand(4, 300)
-
-
+        train_data[i,:] = data_dict[w]
+        train_targs[i,:] = w2vec_dict[w]
     # Normalization of data across different dimensions
 
     sum1 = train_data.sum(axis=0)
@@ -69,18 +78,10 @@ if __name__ == '__main__':
     sum2 = train_data.sum(axis=0)
     for x in range(train_targs.shape[1]):
         train_targs[:, x] -= sum2[x]
-    #vxl = np.random.rand(4, 5000)
+
+    # Train to learn the weights
     weights,l = regression_decoder(train_data,train_targs)
     print(l)
-    scores_clouds = np.save('/home/nathan/Desktop/M01/weights_pictures.npy',weights)
-    # exp = int((args.data_dir.split('/')[-1]).split('_')[0][-1])
-    # assert exp == 1 or exp == 2 or exp == 3
-    # assert 'exp' in args.data_dir.split('/')[-1]
-    # if exp == 1:
-    #     data_gen = load_exp1(args.data_dir)
-    #
-    # elif exp == 2 or exp == 3:
-    #     pass
-    # else:
-    #     raise ValueError("Illegal value for data folder .Select from{1,2,3}")
+    scores_clouds = np.save(weight_file+'.npy',weights)
+
 
