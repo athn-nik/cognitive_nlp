@@ -10,13 +10,21 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
 
         '''
         load embeddings
+        use extract_sent_embed from utils.py
+        it also filters the sentence 
         '''
+
         '''
         construct representation of sentences
+        1.load weights
+        2.multiply weights with word vector
+        3.average embeddings or other measures i.e.weighted average or multiplicative
         '''
+
         '''
-        correlate with real
+        4.correlate with real
         '''
+
         '''
         baseline (do the same with glove)
         '''
