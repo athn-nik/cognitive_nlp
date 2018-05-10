@@ -5,7 +5,7 @@ import argparse
 import heapq
 from utils import load_pickle,save_pickle
 from sklearn.preprocessing import StandardScaler
-
+import os
 
 def evaluation(i1,p1,i2,p2,metric='pearson'):
  #print("Cosine Similarity Calculation...")
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     
     Example run :
     
-    python train_decoder.py - i /path/to/final_data/exp_id/M01/data_180concepts_wordclouds.pkl
+    python train_decoder.py -i /path/to/final_data/exp_id/M01/data_180concepts_wordclouds.pkl
     
     '''
 
@@ -63,10 +63,9 @@ if __name__ == '__main__':
 
     # weights name and path to save them
     if args.data_dir.split('/')[-3][-1]=='1':
-        weight_file = '/'.join(args.data_dir.split('/')[:-1])+'/weights_'+(args.data_dir.split('/')[-1]).split('_')[-1].split('.')[0]
-        print(weight_file)
+        weight_file = '/'.join(args.data_dir.split('/')[:-1])+'/weights/weights_'+(args.data_dir.split('/')[-1]).split('_')[-1].split('.')[0]
     else:
-        weight_file = '/'.join(args.data_dir.split('/')[:-1]) + '/weights_sentences'
+        weight_file = '/'.join(args.data_dir.split('/')[:-1]) + '/weights/weights_sentences'
 
     # load data and convert to numpy
     w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
@@ -88,5 +87,8 @@ if __name__ == '__main__':
         train_targs[:, x] -= sum2[x]
 
     # Train to learn the weights
-    weights,l = regression_decoder(train_data,train_targs)
-    scores_clouds = np.save(weight_file+'.npy',weights)
+    weights,ld = regression_decoder(train_data,train_targs)
+    print(ld)
+    if not os.path.exists('/'.join(weight_file.split('/')[:-1])):
+        os.makedirs('/'.join(weight_file.split('/')[:-1]))
+    np.save(weight_file+'.npy',weights)
