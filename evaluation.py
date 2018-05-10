@@ -82,7 +82,7 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
         train_data = abs(train_data1-train_data2)**2
         train_data = (StandardScaler(with_mean=True, with_std=True).fit_transform(train_data))
 
-        model = linear_model.Ridge(alpha=1,fit_intercept=True,normalize=True)
+        model = linear_model.LinearRegression(fit_intercept=True,normalize=True)
 
         model.fit(train_data,targets)
         mle_est = model.coef_
@@ -163,7 +163,6 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
         # All dataset
         ########################################################################
         ########################################################################
-
         neural_corr = spearmanr(estimated_similarity,real)[0]
         neural_corr_low = spearmanr(estima_low, real_low)[0]
         neural_corr_high =spearmanr(estima_high, real_high)[0]
