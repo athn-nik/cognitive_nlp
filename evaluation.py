@@ -65,20 +65,12 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
         targets=np.zeros((len(train_wds),1))
         i=0
         for i,x in enumerate(train_wds):
-            # if x[0] == 'theatre' or x[1] == 'theatre':
-            #     word = 'theater'
-            # if x[0] == 'harbour' or x[1] == 'harbour':
-            #     word = 'harbor'
-            # if x[0] == 'colour' or x[1] == 'colour':
-            #     word = 'color'
             e1_t = glove_model[x[0]]
             e2_t = glove_model[x[1]]
 
             pred_1_t = np.dot(weights_extracted,e1_t)
             pred_2_t = np.dot(weights_extracted,e2_t)
-            #
-            # diff_t = pred_2_t*pred_1_t
-            # dist_t = diff_t.reshape(len(diff_t))
+
             train_data1[i,:] = pred_1_t.reshape(s_v+1)
             train_data2[i,:] = pred_2_t.reshape(s_v+1)
             targets[i,0]=float(train_scores[i])
@@ -96,9 +88,6 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
 
         model.fit(train_data,targets)
         mle_est = model.coef_
-        #bias=model.intercept_
-        #bias=np.array(bias)
-        #mle_est=np.append(mle_est,bias)
 
         sum1 = 0
         estimated_similarity = []
@@ -113,35 +102,17 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
         j = 0
         for j,x in enumerate(test_wds):
             e1_te = glove_model[x[0]]
-            #e1_te=e1_te.reshape(s_v,1)#26
             e2_te = glove_model[x[1]]
-            #e2_te=e2_te.reshape(s_v,1)
-            # e1_te = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
-            #                                         method=method).fit_transform(e1_te)
-            # e2_te = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
-            #                                         method=method).fit_transform(e2_te)
-            # try:
-            #     bsl_pair = 1-spatial.distance.cosine(e1_te,e2_te)
-            #     bsl.append(bsl_pair)
-            # except KeyError:
-            #     bsl.append(0.5)
 
             pred_1_te = np.dot(weights_extracted,e1_te)
             pred_2_te = np.dot(weights_extracted,e2_te)
 
-            #
-            # diff_te = pred_2_te*pred_1_te
-            # diff_te = np.append(diff_te,1)
-            # helper = diff_te.reshape(len(diff_te))
             test_data_glove_1[j, :] = np.array(e1_te).reshape(300)
             test_data_glove_2[j, :] = np.array(e2_te).reshape(300)
 
             test_data1[j,:] = pred_1_te.reshape(s_v+1)
             test_data2[j,:] = pred_2_te.reshape(s_v+1)
 
-            #test_data[j,:]=helper
-            #est_sim=np.dot(diff_te,mle_est)
-            #estimated_similarity.append(est_sim)
             real.append(float(test_scores[j]))
 
         test_data1 = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
