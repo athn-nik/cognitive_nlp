@@ -11,13 +11,14 @@ from sklearn import linear_model
 from sklearn.preprocessing import StandardScaler
 import sys
 import glob
+from sklearn import manifold
 
 data_train=fetch_MEN("dev")
 data_test=fetch_MEN("test")
 
 # fetch_WS353(which="similarity")
 # fetch_SimLex999()
-# fetch_RW()
+#fetch_RW()
 # fetch_RG65()
 
 train_wds=data_train['X'].tolist()
@@ -37,6 +38,9 @@ emb_dim=300
 glove_model=load_pickle('../word_embeddings/glove300d.42B.MEN.pkl')
 
 data_dir = sys.argv[1]
+n_neighbors = 5
+n_components = 100
+method = 'standard'
 for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10", "M13" ,"M14" ,"M15" ,"M16" ,"M17" ,"P01"]:
     weights_lst = glob.glob(data_dir + '/' + part + '/weights/*')
     print("Participant ID : ",part)
@@ -79,8 +83,14 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
             train_data2[i,:] = pred_2_t.reshape(s_v+1)
             targets[i,0]=float(train_scores[i])
 
+        train_data1 = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
+                                            method=method).fit_transform(train_data1)
+
+        train_data2 = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
+                                            method=method).fit_transform(train_data2)
+
         train_data = abs(train_data1-train_data2)**2
-        train_data = (StandardScaler(with_mean=True, with_std=True).fit_transform(train_data))
+        #train_data = (StandardScaler(with_mean=True, with_std=True).fit_transform(train_data))
 
         model = linear_model.LinearRegression(fit_intercept=True,normalize=True)
 
@@ -97,18 +107,24 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
         test_data = np.zeros((len(test_wds),s_v+1))
         test_data1 = np.zeros((len(test_wds),s_v+1))
         test_data2 = np.zeros((len(test_wds),s_v+1))
+
+        test_data_glove_1 = np.zeros((len(test_wds), 300))
+        test_data_glove_2 = np.zeros((len(test_wds), 300))
         j = 0
         for j,x in enumerate(test_wds):
             e1_te = glove_model[x[0]]
             #e1_te=e1_te.reshape(s_v,1)#26
             e2_te = glove_model[x[1]]
             #e2_te=e2_te.reshape(s_v,1)
-
-            try:
-                bsl_pair = 1-spatial.distance.cosine(glove_model[x[0]],glove_model[x[1]])
-                bsl.append(bsl_pair)
-            except KeyError:
-                bsl.append(0.5)
+            # e1_te = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
+            #                                         method=method).fit_transform(e1_te)
+            # e2_te = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
+            #                                         method=method).fit_transform(e2_te)
+            # try:
+            #     bsl_pair = 1-spatial.distance.cosine(e1_te,e2_te)
+            #     bsl.append(bsl_pair)
+            # except KeyError:
+            #     bsl.append(0.5)
 
             pred_1_te = np.dot(weights_extracted,e1_te)
             pred_2_te = np.dot(weights_extracted,e2_te)
@@ -117,6 +133,9 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
             # diff_te = pred_2_te*pred_1_te
             # diff_te = np.append(diff_te,1)
             # helper = diff_te.reshape(len(diff_te))
+            test_data_glove_1[j, :] = np.array(e1_te).reshape(300)
+            test_data_glove_2[j, :] = np.array(e2_te).reshape(300)
+
             test_data1[j,:] = pred_1_te.reshape(s_v+1)
             test_data2[j,:] = pred_2_te.reshape(s_v+1)
 
@@ -124,8 +143,20 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
             #est_sim=np.dot(diff_te,mle_est)
             #estimated_similarity.append(est_sim)
             real.append(float(test_scores[j]))
+
+        test_data1 = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
+                                                     method=method).fit_transform(test_data1)
+        test_data2 = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
+                                                     method=method).fit_transform(test_data2)
+
         test_data = abs(test_data1-test_data2)**2
-        test_data = (StandardScaler(with_mean=True, with_std=True).fit_transform(test_data))
+
+        test_data_glove_1 = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
+                                                     method=method).fit_transform(test_data_glove_1)
+        test_data_glove_2 = manifold.LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, eigen_solver='auto',
+                                                     method=method).fit_transform(test_data_glove_2)
+
+        #test_data = (StandardScaler(with_mean=True, with_std=True).fit_transform(test_data))
         #predictions=model.predict(test_data)
         #for i in predictions:
             #print(i)
@@ -133,6 +164,10 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
         for i in range(test_data.shape[0]):
             est_sim = np.dot(test_data[i,:],mle_est.T)
             estimated_similarity.append(est_sim[0])
+
+        for i in range(test_data.shape[0]):
+            bsl_sim = 1 - spatial.distance.cosine(test_data_glove_1[i,:], test_data_glove_2[i,:])
+            bsl.append(bsl_sim)
         #print(len(estimated_similarity))
 
         #bsl=[x[0] for x in bsl]
@@ -146,10 +181,10 @@ for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10
         real = [(float(i)-min(real)) / (max(real)-min(real)) for i in real]
         estimated_similarity = [(float(i)-min(estimated_similarity)) / (max(estimated_similarity)-min(estimated_similarity)) for i in estimated_similarity]
 
-        real_low = [x for x in real if x<0.25]
-        real_low_index = [real.index(x) for x in real if x<0.25]
-        real_high = [x for x in real if x>0.75]
-        real_high_index = [real.index(x) for x in real if x>0.75]
+        real_low = [x for x in real if x<0.1]
+        real_low_index = [real.index(x) for x in real if x<0.1]
+        real_high = [x for x in real if x>0.85]
+        real_high_index = [real.index(x) for x in real if x>0.85]
 
         estima_low = [estimated_similarity[idx] for idx in real_low_index]
         estima_high = [estimated_similarity[idx] for idx in real_high_index]
