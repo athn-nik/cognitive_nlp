@@ -38,8 +38,8 @@ emb_dim=300
 glove_model=load_pickle('../word_embeddings/glove300d.42B.MEN.pkl')
 
 data_dir = sys.argv[1]
-n_neighbors = 10
-n_components = 10
+n_neighbors = 5
+n_components = 100
 method = 'standard'
 for part in ["M01" ,"M02", "M03", "M04" ,"M05", "M06" ,"M07", "M08" ,"M09" ,"M10", "M13" ,"M14" ,"M15" ,"M16" ,"M17" ,"P01"]:
     weights_lst = glob.glob(data_dir + '/' + part + '/weights/*')
