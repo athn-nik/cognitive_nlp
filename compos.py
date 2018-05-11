@@ -47,7 +47,9 @@ for part in EXP_PARTS:
     for sentence, sentence_from_mri in sentence_embeddings.items():
         sentence_from_glove = utils.extract_sent_embed(
             sentence.strip(), glove_embeddings=glove_embeddings)
-        sentence_from_voxels = np.dot(weights, sentence_from_glove)[:-1]
+        sentence_from_voxels = utils.extract_sent_embed1(
+            sentence.strip(), glove_embeddings=glove_embeddings, weights=weights)
+        # np.dot(weights, sentence_from_glove)[:-1]
         sp_voxels = spearmanr(sentence_from_mri, sentence_from_voxels)
         avg_sp_voxels += sp_voxels[0]
         pear_voxels = pearsonr(sentence_from_mri, sentence_from_voxels)
