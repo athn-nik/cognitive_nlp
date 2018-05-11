@@ -24,7 +24,8 @@ if exp == 'exp2':
     sentences_file = 'examples_384sentences.pkl'
     EXP_PARTS = EXP2_PARTS
 elif exp == 'exp3':
-    pass
+    sentences_file = 'examples_243sentences.pkl'
+    EXP_PARTS = EXP3_PARTS
 else:
     print('Invalid experiment {}'.format(exp))
     sys.exit(1)

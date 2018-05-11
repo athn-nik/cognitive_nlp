@@ -222,24 +222,30 @@ def loadGloveModel(gloveFile='../word_embeddings/glove.42B.300d.txt'):
 
 
 
-def extract_sent_embed(sent):
-
-    w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
+def extract_sent_embed(sent, glove_embeddings=None):
+    if glove_embeddings is None:
+        w2vec_dict = load_pickle('./stimuli/word2vec.pkl')
+    w2vec_dict = glove_embeddings
     with open('./stimuli/stopwords.txt') as f:
         stp_wds = f.read().splitlines()
     sent = (sent.translate(TRANS)).lower().split(' ')
+
     sent_proc=[]
     for wd in sent:
         if wd not in stp_wds:
             if '-' in wd:
-                sent_proc.extend(wd.split('-'))
+                split_words = wd.split('-')
+                for w in split_words:
+                    sent_proc.append(w)
             else:
-                sent_proc.extend(wd)
+                sent_proc.append(wd)
     avg_vec=np.zeros((1,300))
     for wd in sent_proc:
         avg_vec += w2vec_dict[wd]
 
-    avg_vec/=len(sent_proc)
+    #avg_vec/=len(sent_proc)
+    avg_vec = avg_vec.reshape((300,))
+    return avg_vec
 
 def load_data_meta(data_tuple):
     data = dict()
