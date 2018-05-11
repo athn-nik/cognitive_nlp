@@ -24,7 +24,7 @@ if exp == 'exp2':
     sentences_file = 'examples_384sentences.pkl'
     EXP_PARTS = EXP2_PARTS
 elif exp == 'exp3':
-    pass
+    EXP_PARTS = EXP3_PARTS
 else:
     print('Invalid experiment {}'.format(exp))
     sys.exit(1)
@@ -45,7 +45,7 @@ for part in EXP_PARTS:
     num_elem = 0
     for sentence, sentence_from_mri in sentence_embeddings.items():
         sentence_from_glove = utils.extract_sent_embed(
-            sentence.strip(), glove_embeddings=glove_embeddings)
+            sentence.strip())
         sentence_from_voxels = np.dot(weights, sentence_from_glove)[:-1]
         sp_voxels = spearmanr(sentence_from_mri, sentence_from_voxels)
         avg_sp_voxels += sp_voxels[0]
